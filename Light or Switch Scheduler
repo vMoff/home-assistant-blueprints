@@ -1,15 +1,15 @@
 blueprint:
-  name: Light/Switch Scheduler
+  name: Light/Switch Scheduler (with days of week)
   description: >
-    Turn a light or switch on/off at set times or around sunset/sunrise.
-    Each option can be enabled/disabled with a toggle.
+    Turn a light or switch on/off at set times or around sunset/sunrise,
+    with toggles for each trigger type and selectable days of the week.
   domain: automation
   input:
     target_entity:
       name: Light or Switch
       selector:
         entity:
-          domain: 
+          domain:
             - light
             - switch
 
@@ -61,6 +61,37 @@ blueprint:
       selector:
         text:
 
+    active_days:
+      name: Active Days
+      description: Days of the week when this automation should run
+      default:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+        - sat
+        - sun
+      selector:
+        select:
+          multiple: true
+          mode: list
+          options:
+            - label: Monday
+              value: mon
+            - label: Tuesday
+              value: tue
+            - label: Wednesday
+              value: wed
+            - label: Thursday
+              value: thu
+            - label: Friday
+              value: fri
+            - label: Saturday
+              value: sat
+            - label: Sunday
+              value: sun
+
 mode: single
 
 trigger:
@@ -80,6 +111,10 @@ trigger:
     id: sunrise
 
 condition:
+  - condition: template
+    value_template: >
+      {{ now().strftime('%a')|lower in (!input active_days) }}
+
   - condition: or
     conditions:
       - condition: and
