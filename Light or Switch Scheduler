@@ -2,7 +2,7 @@ blueprint:
   name: Light/Switch Scheduler
   description: >
     Turn a light or switch on/off at set times or around sunset/sunrise.
-    Non-admins can use this to schedule devices without editing YAML.
+    Each option can be enabled/disabled with a toggle for clarity.
   domain: automation
   input:
     target_entity:
@@ -10,32 +10,62 @@ blueprint:
       description: Choose the light or switch to control.
       selector:
         entity:
-          domain: 
+          domain:
             - light
             - switch
+
+    enable_time_on:
+      name: Enable Turn ON Time
+      description: Toggle to use the Turn ON Time trigger
+      default: false
+      selector:
+        boolean:
+
     turn_on_time:
       name: Turn ON Time
-      description: Time to turn on (optional)
-      default: ""
+      description: Time to turn on (only if enabled)
+      default: "00:00:00"
       selector:
         time:
+
+    enable_time_off:
+      name: Enable Turn OFF Time
+      description: Toggle to use the Turn OFF Time trigger
+      default: false
+      selector:
+        boolean:
+
     turn_off_time:
       name: Turn OFF Time
-      description: Time to turn off (optional)
-      default: ""
+      description: Time to turn off (only if enabled)
+      default: "00:00:00"
       selector:
         time:
+
+    enable_sunset:
+      name: Enable Sunset Trigger
+      description: Toggle to use the sunset trigger
+      default: false
+      selector:
+        boolean:
+
     sunset_offset:
       name: Sunset Offset
-      description: >
-        Offset from sunset (e.g. -00:15:00 for 15 min before, +00:10:00 for after).
+      description: Offset from sunset (e.g. -00:15:00 for 15 min before, +00:10:00 for after).
       default: "0:00:00"
       selector:
         text:
+
+    enable_sunrise:
+      name: Enable Sunrise Trigger
+      description: Toggle to use the sunrise trigger
+      default: false
+      selector:
+        boolean:
+
     sunrise_offset:
       name: Sunrise Offset
-      description: >
-        Offset from sunrise (e.g. +00:20:00 for 20 min after).
+      description: Offset from sunrise (e.g. +00:20:00 for 20 min after).
       default: "0:00:00"
       selector:
         text:
@@ -57,6 +87,34 @@ trigger:
     event: sunrise
     offset: !input sunrise_offset
     id: sunrise
+
+condition:
+  - condition: or
+    conditions:
+      - condition: and
+        conditions:
+          - condition: trigger
+            id: time_on
+          - condition: template
+            value_template: "{{ !input enable_time_on }}"
+      - condition: and
+        conditions:
+          - condition: trigger
+            id: time_off
+          - condition: template
+            value_template: "{{ !input enable_time_off }}"
+      - condition: and
+        conditions:
+          - condition: trigger
+            id: sunset
+          - condition: template
+            value_template: "{{ !input enable_sunset }}"
+      - condition: and
+        conditions:
+          - condition: trigger
+            id: sunrise
+          - condition: template
+            value_template: "{{ !input enable_sunrise }}"
 
 action:
   - choose:
