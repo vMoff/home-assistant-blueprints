@@ -16,15 +16,15 @@ blueprint:
 
     turn_on_time:
       name: Turn ON Time
-      description: "**OPTIONAL:** Fixed time to turn on"
-      default: ""
+      description: "**OPTIONAL:** Fixed time to turn on (leave at 00:00:00 if unused)"
+      default: "00:00:00"
       selector:
         time:
 
     turn_off_time:
       name: Turn OFF Time
-      description: "**OPTIONAL:** Fixed time to turn off"
-      default: ""
+      description: "**OPTIONAL:** Fixed time to turn off (leave at 00:00:00 if unused)"
+      default: "00:00:00"
       selector:
         time:
 
@@ -34,6 +34,7 @@ blueprint:
       default: "disabled"
       selector:
         select:
+          mode: dropdown
           options:
             - label: "Disabled"
               value: "disabled"
@@ -52,6 +53,7 @@ blueprint:
       default: "disabled"
       selector:
         select:
+          mode: dropdown
           options:
             - label: "Disabled"
               value: "disabled"
@@ -119,13 +121,13 @@ condition:
     value_template: >
       {{ now().strftime('%a')[:3] | lower in active_days }}
 
-  # Skip disabled or unset options
+  # Skip disabled or unused options
   - condition: or
     conditions:
       - condition: template
-        value_template: "{{ trigger.id == 'time_on' and turn_on_time != '' }}"
+        value_template: "{{ trigger.id == 'time_on' and turn_on_time != '00:00:00' }}"
       - condition: template
-        value_template: "{{ trigger.id == 'time_off' and turn_off_time != '' }}"
+        value_template: "{{ trigger.id == 'time_off' and turn_off_time != '00:00:00' }}"
       - condition: template
         value_template: "{{ trigger.id == 'sunrise' and sunrise_option != 'disabled' }}"
       - condition: template
