@@ -110,22 +110,15 @@ blueprint:
           multiple: true
           mode: list
           options:
-            - label: "Monday"
-              value: mon
-            - label: "Tuesday"
-              value: tue
-            - label: "Wednesday"
-              value: wed
-            - label: "Thursday"
-              value: thu
-            - label: "Friday"
-              value: fri
-            - label: "Saturday"
-              value: sat
-            - label: "Sunday"
-              value: sun
+            - label: "Monday"    ; value: mon
+            - label: "Tuesday"   ; value: tue
+            - label: "Wednesday" ; value: wed
+            - label: "Thursday"  ; value: thu
+            - label: "Friday"    ; value: fri
+            - label: "Saturday"  ; value: sat
+            - label: "Sunday"    ; value: sun
 
-# Use restart so an OFF time can interrupt any pending delay branch
+# Allow an OFF time to interrupt a pending delay branch
 mode: restart
 
 trigger:
@@ -162,15 +155,20 @@ condition:
         value_template: "{{ trigger.id == 'sunset' and ((enable_sunset)) and ((sunset_option)) != 'none' }}"
 
 action:
-  # High-level debug entry (runs only after conditions passed)
+  # High-level debug (runs only after conditions pass)
   - service: logbook.log
     data:
       name: "Light/Switch Scheduler"
       message: >
-        Trigger={{ trigger.id }}; active_days_ok={{ (now().strftime('%a')[:3] | lower) in ((active_days)) }};
-        enable_on={{ ((enable_turn_on_time)) }}; enable_off={{ ((enable_turn_off_time)) }};
-        enable_sunrise={{ ((enable_sunrise)) }}; enable_sunset={{ ((enable_sunset)) }};
-        sunrise_option={{ ((sunrise_option)) }}; sunset_option={{ ((sunset_option)) }}
+        Trigger={{ trigger.id }};
+        active_days_ok={{ (now().strftime('%a')[:3] | lower) in ((active_days)) }};
+        enable_on={{ ((enable_turn_on_time)) }};
+        enable_off={{ ((enable_turn_off_time)) }};
+        enable_sunrise={{ ((enable_sunrise)) }};
+        enable_sunset={{ ((enable_sunset)) }};
+        sunrise_option={{ ((sunrise_option)) }};
+        sunset_option={{ ((sunset_option)) }};
+        targets={{ ((target_entities)) | default([], true) | join(', ') }}
 
   - choose:
       # --- Fixed time: ON ---
@@ -181,7 +179,8 @@ action:
           - service: logbook.log
             data:
               name: "Light/Switch Scheduler"
-              message: "time_on branch → Turning ON: {{ (!input target_entities) | default('') }}"
+              message: >
+                time_on branch → Turning ON: {{ ((target_entities)) | default([], true) | join(', ') }}
           - service: homeassistant.turn_on
             target:
               entity_id: !input target_entities
@@ -194,7 +193,8 @@ action:
           - service: logbook.log
             data:
               name: "Light/Switch Scheduler"
-              message: "time_off branch → Turning OFF: {{ (!input target_entities) | default('') }}"
+              message: >
+                time_off branch → Turning OFF: {{ ((target_entities)) | default([], true) | join(', ') }}
           - service: homeassistant.turn_off
             target:
               entity_id: !input target_entities
@@ -210,8 +210,8 @@ action:
             data:
               name: "Light/Switch Scheduler"
               message: >
-                sunrise ON branch → delay={{ ((sunrise_option)).split('_')[1] }}, then turn ON:
-                {{ (!input target_entities) | default('') }}
+                sunrise ON branch → delay={{ ((sunrise_option)).split('_')[1] }}, then ON:
+                {{ ((target_entities)) | default([], true) | join(', ') }}
           - delay: "{{ ((sunrise_option)).split('_')[1] }}"
           - service: homeassistant.turn_on
             target:
@@ -227,8 +227,8 @@ action:
             data:
               name: "Light/Switch Scheduler"
               message: >
-                sunrise OFF branch → delay={{ ((sunrise_option)).split('_')[1] }}, then turn OFF:
-                {{ (!input target_entities) | default('') }}
+                sunrise OFF branch → delay={{ ((sunrise_option)).split('_')[1] }}, then OFF:
+                {{ ((target_entities)) | default([], true) | join(', ') }}
           - delay: "{{ ((sunrise_option)).split('_')[1] }}"
           - service: homeassistant.turn_off
             target:
@@ -245,8 +245,8 @@ action:
             data:
               name: "Light/Switch Scheduler"
               message: >
-                sunset ON branch → delay={{ ((sunset_option)).split('_')[1] }}, then turn ON:
-                {{ (!input target_entities) | default('') }}
+                sunset ON branch → delay={{ ((sunset_option)).split('_')[1] }}, then ON:
+                {{ ((target_entities)) | default([], true) | join(', ') }}
           - delay: "{{ ((sunset_option)).split('_')[1] }}"
           - service: homeassistant.turn_on
             target:
@@ -262,15 +262,14 @@ action:
             data:
               name: "Light/Switch Scheduler"
               message: >
-                sunset OFF branch → delay={{ ((sunset_option)).split('_')[1] }}, then turn OFF:
-                {{ (!input target_entities) | default('') }}
+                sunset OFF branch → delay={{ ((sunset_option)).split('_')[1] }}, then OFF:
+                {{ ((target_entities)) | default([], true) | join(', ') }}
           - delay: "{{ ((sunset_option)).split('_')[1] }}"
           - service: homeassistant.turn_off
             target:
               entity_id: !input target_entities
 
     default:
-      # Should rarely execute: conditions passed but no branch matched.
       - service: logbook.log
         data:
           name: "Light/Switch Scheduler"
@@ -278,4 +277,5 @@ action:
             No choose-branch matched. trigger={{ trigger.id }},
             sunrise_option={{ ((sunrise_option)) }}, sunset_option={{ ((sunset_option)) }},
             toggles: ON={{ ((enable_turn_on_time)) }}, OFF={{ ((enable_turn_off_time)) }},
-            sunrise={{ ((enable_sunrise)) }}, sunset={{ ((enable_sunset)) }}
+            sunrise={{ ((enable_sunrise)) }}, sunset={{ ((enable_sunset)) }},
+            targets={{ ((target_entities)) | default([], true) | join(', ') }}
