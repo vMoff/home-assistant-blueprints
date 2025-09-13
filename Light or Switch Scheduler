@@ -114,18 +114,18 @@ trigger:
     id: time_off
   - platform: sun
     event: sunrise
-    offset: "{{ (!input sunrise_option).split('_')[1] if !input sunrise_option != 'disabled' else '00:00:00' }}"
+    offset: "{{ sunrise_option.split('_')[1] if sunrise_option != 'disabled' else '00:00:00' }}"
     id: sunrise
   - platform: sun
     event: sunset
-    offset: "{{ (!input sunset_option).split('_')[1] if !input sunset_option != 'disabled' else '00:00:00' }}"
+    offset: "{{ sunset_option.split('_')[1] if sunset_option != 'disabled' else '00:00:00' }}"
     id: sunset
 
 condition:
   # Restrict to selected days
   - condition: template
     value_template: >
-      {{ now().strftime('%a')|lower[0:3] in (!input active_days) }}
+      {{ now().strftime('%a')|lower[0:3] in active_days }}
 
   # Skip disabled sun options
   - condition: or
@@ -133,9 +133,9 @@ condition:
       - condition: template
         value_template: "{{ trigger.id in ['time_on', 'time_off'] }}"
       - condition: template
-        value_template: "{{ trigger.id == 'sunrise' and !input sunrise_option != 'disabled' }}"
+        value_template: "{{ trigger.id == 'sunrise' and sunrise_option != 'disabled' }}"
       - condition: template
-        value_template: "{{ trigger.id == 'sunset' and !input sunset_option != 'disabled' }}"
+        value_template: "{{ trigger.id == 'sunset' and sunset_option != 'disabled' }}"
 
 action:
   - choose:
@@ -159,7 +159,7 @@ action:
           - condition: trigger
             id: sunrise
           - condition: template
-            value_template: "{{ (!input sunrise_option).startswith('on_') }}"
+            value_template: "{{ sunrise_option.startswith('on_') }}"
         sequence:
           - service: homeassistant.turn_on
             target:
@@ -169,7 +169,7 @@ action:
           - condition: trigger
             id: sunrise
           - condition: template
-            value_template: "{{ (!input sunrise_option).startswith('off_') }}"
+            value_template: "{{ sunrise_option.startswith('off_') }}"
         sequence:
           - service: homeassistant.turn_off
             target:
@@ -179,7 +179,7 @@ action:
           - condition: trigger
             id: sunset
           - condition: template
-            value_template: "{{ (!input sunset_option).startswith('on_') }}"
+            value_template: "{{ sunset_option.startswith('on_') }}"
         sequence:
           - service: homeassistant.turn_on
             target:
@@ -189,7 +189,7 @@ action:
           - condition: trigger
             id: sunset
           - condition: template
-            value_template: "{{ (!input sunset_option).startswith('off_') }}"
+            value_template: "{{ sunset_option.startswith('off_') }}"
         sequence:
           - service: homeassistant.turn_off
             target:
