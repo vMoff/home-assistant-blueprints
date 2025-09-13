@@ -24,6 +24,7 @@ blueprint:
     turn_on_time:
       name: Turn ON Time
       description: "Fixed time to turn on (ignored unless toggle is ON)"
+      default: "12:00:00"
       selector:
         time:
 
@@ -36,6 +37,7 @@ blueprint:
     turn_off_time:
       name: Turn OFF Time
       description: "Fixed time to turn off (ignored unless toggle is ON)"
+      default: "12:00:00"
       selector:
         time:
 
