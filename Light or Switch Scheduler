@@ -1,5 +1,5 @@
 blueprint:
-  name: Light/Switch Scheduler (with days of week)
+  name: Light/Switch Scheduler
   description: >
     Turn a light or switch on/off at set times or around sunset/sunrise,
     with toggles for each trigger type and selectable days of the week.
