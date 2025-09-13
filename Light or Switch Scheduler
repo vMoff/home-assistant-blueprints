@@ -1,5 +1,5 @@
 blueprint:
-  name: Light/Switch Scheduler (Dropdown Offsets + Days)
+  name: Light/Switch Scheduler
   description: >
     Turn a light or switch on/off at set times or around sunrise/sunset,
     with dropdown offset selection and active days of the week.
