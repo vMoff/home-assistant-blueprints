@@ -17,43 +17,45 @@ blueprint:
     # --- Time-based Triggers ---
     enable_turn_on_time:
       name: Enable Turn ON Time
-      description: Toggle to enable fixed ON time
       default: false
       selector:
         boolean:
 
     enable_turn_off_time:
       name: Enable Turn OFF Time
-      description: Toggle to enable fixed OFF time
       default: false
       selector:
         boolean:
 
     turn_on_time:
       name: Turn ON Time
-      description: "Fixed time to turn on"
+      description: "Fixed time to turn on (ignored unless toggle is ON)"
       default: "00:00:00"
       selector:
         time:
 
     turn_off_time:
       name: Turn OFF Time
-      description: "Fixed time to turn off"
+      description: "Fixed time to turn off (ignored unless toggle is ON)"
       default: "00:00:00"
       selector:
         time:
 
     # --- Sunrise/Sunset Triggers ---
+    enable_sunrise:
+      name: Enable Sunrise Trigger
+      default: false
+      selector:
+        boolean:
+
     sunrise_option:
       name: Sunrise Trigger
       description: Choose what happens relative to sunrise
-      default: "disabled"
+      default: "off_00:00:00"
       selector:
         select:
           mode: dropdown
           options:
-            - label: "Disabled"
-              value: "disabled"
             - label: "Turn ON at sunrise"
               value: "on_00:00:00"
             - label: "Turn ON 15 minutes after sunrise"
@@ -63,16 +65,20 @@ blueprint:
             - label: "Turn OFF 15 minutes after sunrise"
               value: "off_00:15:00"
 
+    enable_sunset:
+      name: Enable Sunset Trigger
+      default: false
+      selector:
+        boolean:
+
     sunset_option:
       name: Sunset Trigger
       description: Choose what happens relative to sunset
-      default: "disabled"
+      default: "off_00:00:00"
       selector:
         select:
           mode: dropdown
           options:
-            - label: "Disabled"
-              value: "disabled"
             - label: "Turn ON at sunset"
               value: "on_00:00:00"
             - label: "Turn ON 15 minutes after sunset"
@@ -146,9 +152,9 @@ condition:
       - condition: template
         value_template: "{{ trigger.id == 'time_off' and enable_turn_off_time }}"
       - condition: template
-        value_template: "{{ trigger.id == 'sunrise' and sunrise_option != 'disabled' }}"
+        value_template: "{{ trigger.id == 'sunrise' and enable_sunrise }}"
       - condition: template
-        value_template: "{{ trigger.id == 'sunset' and sunset_option != 'disabled' }}"
+        value_template: "{{ trigger.id == 'sunset' and enable_sunset }}"
 
 action:
   - choose:
@@ -172,7 +178,7 @@ action:
           - condition: trigger
             id: sunrise
           - condition: template
-            value_template: "{{ sunrise_option.startswith('on_') }}"
+            value_template: "{{ sunrise_option.startswith('on_') and enable_sunrise }}"
         sequence:
           - delay: "{{ sunrise_option.split('_')[1] }}"
           - service: homeassistant.turn_on
@@ -183,7 +189,7 @@ action:
           - condition: trigger
             id: sunrise
           - condition: template
-            value_template: "{{ sunrise_option.startswith('off_') }}"
+            value_template: "{{ sunrise_option.startswith('off_') and enable_sunrise }}"
         sequence:
           - delay: "{{ sunrise_option.split('_')[1] }}"
           - service: homeassistant.turn_off
@@ -194,7 +200,7 @@ action:
           - condition: trigger
             id: sunset
           - condition: template
-            value_template: "{{ sunset_option.startswith('on_') }}"
+            value_template: "{{ sunset_option.startswith('on_') and enable_sunset }}"
         sequence:
           - delay: "{{ sunset_option.split('_')[1] }}"
           - service: homeassistant.turn_on
@@ -205,7 +211,7 @@ action:
           - condition: trigger
             id: sunset
           - condition: template
-            value_template: "{{ sunset_option.startswith('off_') }}"
+            value_template: "{{ sunset_option.startswith('off_') and enable_sunset }}"
         sequence:
           - delay: "{{ sunset_option.split('_')[1] }}"
           - service: homeassistant.turn_off
