@@ -24,7 +24,6 @@ blueprint:
     turn_on_time:
       name: Turn ON Time
       description: "Fixed time to turn on (ignored unless toggle is ON)"
-      default: "00:00:00"
       selector:
         time:
 
@@ -37,7 +36,6 @@ blueprint:
     turn_off_time:
       name: Turn OFF Time
       description: "Fixed time to turn off (ignored unless toggle is ON)"
-      default: "00:00:00"
       selector:
         time:
 
@@ -148,7 +146,7 @@ condition:
     value_template: >
       {{ now().strftime('%a')[:3] | lower in active_days }}
 
-  # Skip disabled or unused options
+  # Only run if the trigger type is enabled
   - condition: or
     conditions:
       - condition: template
