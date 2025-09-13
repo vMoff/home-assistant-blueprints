@@ -1,7 +1,7 @@
 blueprint:
   name: Light/Switch Scheduler
   description: >
-    V1 Turn a light or switch on/off at set times or around sunrise/sunset,
+    Turn a light or switch on/off at set times or around sunrise/sunset, 
     with dropdown offset selection and active days of the week.
   domain: automation
   input:
@@ -15,14 +15,14 @@ blueprint:
 
     turn_on_time:
       name: Turn ON Time
-      description: Optional fixed time to turn on
+      description: "**OPTIONAL:** Fixed time to turn on"
       default: ""
       selector:
         time:
 
     turn_off_time:
       name: Turn OFF Time
-      description: Optional fixed time to turn off
+      description: "**OPTIONAL:** Fixed time to turn off"
       default: ""
       selector:
         time:
@@ -30,12 +30,12 @@ blueprint:
     sunrise_option:
       name: Sunrise Trigger
       description: Choose when to turn OFF relative to sunrise
-      default: "off"
+      default: "disabled"
       selector:
         select:
           options:
-            - label: "Off"
-              value: "off"
+            - label: "Disabled"
+              value: "disabled"
             - label: "15 minutes before sunrise"
               value: "-00:15:00"
             - label: "At sunrise"
@@ -46,12 +46,12 @@ blueprint:
     sunset_option:
       name: Sunset Trigger
       description: Choose when to turn ON relative to sunset
-      default: "off"
+      default: "disabled"
       selector:
         select:
           options:
-            - label: "Off"
-              value: "off"
+            - label: "Disabled"
+              value: "disabled"
             - label: "15 minutes before sunset"
               value: "-00:15:00"
             - label: "At sunset"
@@ -114,15 +114,15 @@ condition:
     value_template: >
       {{ now().strftime('%a')|lower[0:3] in (!input active_days) }}
 
-  # Skip if sunrise/sunset set to "off"
+  # Skip if sunrise/sunset set to "disabled"
   - condition: or
     conditions:
       - condition: template
         value_template: "{{ trigger.id in ['time_on', 'time_off'] }}"
       - condition: template
-        value_template: "{{ trigger.id == 'sunrise' and !input sunrise_option != 'off' }}"
+        value_template: "{{ trigger.id == 'sunrise' and !input sunrise_option != 'disabled' }}"
       - condition: template
-        value_template: "{{ trigger.id == 'sunset' and !input sunset_option != 'off' }}"
+        value_template: "{{ trigger.id == 'sunset' and !input sunset_option != 'disabled' }}"
 
 action:
   - choose:
