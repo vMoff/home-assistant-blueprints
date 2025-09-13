@@ -35,20 +35,16 @@ blueprint:
       selector:
         select:
           options:
-            - label: "Turn ON 15 minutes before sunrise"
-              value: "on_-00:15:00"
             - label: "Turn ON at sunrise"
               value: "on_00:00:00"
             - label: "Turn ON 15 minutes after sunrise"
-              value: "on_+00:15:00"
-            - label: "Disabled"
-              value: "disabled"
-            - label: "Turn OFF 15 minutes before sunrise"
-              value: "off_-00:15:00"
+              value: "on_00:15:00"
             - label: "Turn OFF at sunrise"
               value: "off_00:00:00"
             - label: "Turn OFF 15 minutes after sunrise"
-              value: "off_+00:15:00"
+              value: "off_00:15:00"
+            - label: "Disabled"
+              value: "disabled"
 
     sunset_option:
       name: Sunset Trigger
@@ -57,20 +53,16 @@ blueprint:
       selector:
         select:
           options:
-            - label: "Turn ON 15 minutes before sunset"
-              value: "on_-00:15:00"
             - label: "Turn ON at sunset"
               value: "on_00:00:00"
             - label: "Turn ON 15 minutes after sunset"
-              value: "on_+00:15:00"
-            - label: "Disabled"
-              value: "disabled"
-            - label: "Turn OFF 15 minutes before sunset"
-              value: "off_-00:15:00"
+              value: "on_00:15:00"
             - label: "Turn OFF at sunset"
               value: "off_00:00:00"
             - label: "Turn OFF 15 minutes after sunset"
-              value: "off_+00:15:00"
+              value: "off_00:15:00"
+            - label: "Disabled"
+              value: "disabled"
 
     active_days:
       name: Active Days
@@ -114,11 +106,11 @@ trigger:
     id: time_off
   - platform: sun
     event: sunrise
-    offset: "{{ sunrise_option.split('_')[1] if sunrise_option != 'disabled' else '00:00:00' }}"
+    offset: "00:00:00"
     id: sunrise
   - platform: sun
     event: sunset
-    offset: "{{ sunset_option.split('_')[1] if sunset_option != 'disabled' else '00:00:00' }}"
+    offset: "00:00:00"
     id: sunset
 
 condition:
@@ -161,6 +153,7 @@ action:
           - condition: template
             value_template: "{{ sunrise_option.startswith('on_') }}"
         sequence:
+          - delay: "{{ sunrise_option.split('_')[1] }}"
           - service: homeassistant.turn_on
             target:
               entity_id: !input target_entities
@@ -171,6 +164,7 @@ action:
           - condition: template
             value_template: "{{ sunrise_option.startswith('off_') }}"
         sequence:
+          - delay: "{{ sunrise_option.split('_')[1] }}"
           - service: homeassistant.turn_off
             target:
               entity_id: !input target_entities
@@ -181,6 +175,7 @@ action:
           - condition: template
             value_template: "{{ sunset_option.startswith('on_') }}"
         sequence:
+          - delay: "{{ sunset_option.split('_')[1] }}"
           - service: homeassistant.turn_on
             target:
               entity_id: !input target_entities
@@ -191,6 +186,7 @@ action:
           - condition: template
             value_template: "{{ sunset_option.startswith('off_') }}"
         sequence:
+          - delay: "{{ sunset_option.split('_')[1] }}"
           - service: homeassistant.turn_off
             target:
               entity_id: !input target_entities
