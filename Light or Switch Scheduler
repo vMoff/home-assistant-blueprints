@@ -125,7 +125,7 @@ condition:
   # Restrict to selected days
   - condition: template
     value_template: >
-      {{ now().strftime('%a')|lower[0:3] in active_days }}
+      {{ now().strftime('%a')[:3] | lower in active_days }}
 
   # Skip disabled sun options
   - condition: or
