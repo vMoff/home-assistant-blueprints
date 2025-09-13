@@ -1,8 +1,9 @@
 blueprint:
-  name: Light/Switch Scheduler
+  name: Light/Switch Scheduler (with Debug)
   description: >
     Turn one or more lights or switches on/off at set times or around sunrise/sunset,
-    with dropdown action/offset selection and active days of the week.
+    with dropdown action/offset selection and active days of the week. Includes logbook
+    debug messages for each run/branch.
   domain: automation
   input:
     target_entities:
@@ -117,7 +118,6 @@ blueprint:
               value: wed
             - label: "Thursday"
               value: thu
-              # (continues)
             - label: "Friday"
               value: fri
             - label: "Saturday"
@@ -125,7 +125,8 @@ blueprint:
             - label: "Sunday"
               value: sun
 
-mode: single
+# Use restart so an OFF time can interrupt any pending delay branch
+mode: restart
 
 trigger:
   - platform: time
@@ -161,12 +162,26 @@ condition:
         value_template: "{{ trigger.id == 'sunset' and ((enable_sunset)) and ((sunset_option)) != 'none' }}"
 
 action:
+  # High-level debug entry (runs only after conditions passed)
+  - service: logbook.log
+    data:
+      name: "Light/Switch Scheduler"
+      message: >
+        Trigger={{ trigger.id }}; active_days_ok={{ (now().strftime('%a')[:3] | lower) in ((active_days)) }};
+        enable_on={{ ((enable_turn_on_time)) }}; enable_off={{ ((enable_turn_off_time)) }};
+        enable_sunrise={{ ((enable_sunrise)) }}; enable_sunset={{ ((enable_sunset)) }};
+        sunrise_option={{ ((sunrise_option)) }}; sunset_option={{ ((sunset_option)) }}
+
   - choose:
       # --- Fixed time: ON ---
       - conditions:
           - condition: trigger
             id: time_on
         sequence:
+          - service: logbook.log
+            data:
+              name: "Light/Switch Scheduler"
+              message: "time_on branch → Turning ON: {{ (!input target_entities) | default('') }}"
           - service: homeassistant.turn_on
             target:
               entity_id: !input target_entities
@@ -176,6 +191,10 @@ action:
           - condition: trigger
             id: time_off
         sequence:
+          - service: logbook.log
+            data:
+              name: "Light/Switch Scheduler"
+              message: "time_off branch → Turning OFF: {{ (!input target_entities) | default('') }}"
           - service: homeassistant.turn_off
             target:
               entity_id: !input target_entities
@@ -187,6 +206,12 @@ action:
           - condition: template
             value_template: "{{ (((sunrise_option)) | string).startswith('on_') and ((enable_sunrise)) }}"
         sequence:
+          - service: logbook.log
+            data:
+              name: "Light/Switch Scheduler"
+              message: >
+                sunrise ON branch → delay={{ ((sunrise_option)).split('_')[1] }}, then turn ON:
+                {{ (!input target_entities) | default('') }}
           - delay: "{{ ((sunrise_option)).split('_')[1] }}"
           - service: homeassistant.turn_on
             target:
@@ -198,6 +223,12 @@ action:
           - condition: template
             value_template: "{{ (((sunrise_option)) | string).startswith('off_') and ((enable_sunrise)) }}"
         sequence:
+          - service: logbook.log
+            data:
+              name: "Light/Switch Scheduler"
+              message: >
+                sunrise OFF branch → delay={{ ((sunrise_option)).split('_')[1] }}, then turn OFF:
+                {{ (!input target_entities) | default('') }}
           - delay: "{{ ((sunrise_option)).split('_')[1] }}"
           - service: homeassistant.turn_off
             target:
@@ -210,6 +241,12 @@ action:
           - condition: template
             value_template: "{{ (((sunset_option)) | string).startswith('on_') and ((enable_sunset)) }}"
         sequence:
+          - service: logbook.log
+            data:
+              name: "Light/Switch Scheduler"
+              message: >
+                sunset ON branch → delay={{ ((sunset_option)).split('_')[1] }}, then turn ON:
+                {{ (!input target_entities) | default('') }}
           - delay: "{{ ((sunset_option)).split('_')[1] }}"
           - service: homeassistant.turn_on
             target:
@@ -221,7 +258,24 @@ action:
           - condition: template
             value_template: "{{ (((sunset_option)) | string).startswith('off_') and ((enable_sunset)) }}"
         sequence:
+          - service: logbook.log
+            data:
+              name: "Light/Switch Scheduler"
+              message: >
+                sunset OFF branch → delay={{ ((sunset_option)).split('_')[1] }}, then turn OFF:
+                {{ (!input target_entities) | default('') }}
           - delay: "{{ ((sunset_option)).split('_')[1] }}"
           - service: homeassistant.turn_off
             target:
               entity_id: !input target_entities
+
+    default:
+      # Should rarely execute: conditions passed but no branch matched.
+      - service: logbook.log
+        data:
+          name: "Light/Switch Scheduler"
+          message: >
+            No choose-branch matched. trigger={{ trigger.id }},
+            sunrise_option={{ ((sunrise_option)) }}, sunset_option={{ ((sunset_option)) }},
+            toggles: ON={{ ((enable_turn_on_time)) }}, OFF={{ ((enable_turn_off_time)) }},
+            sunrise={{ ((enable_sunrise)) }}, sunset={{ ((enable_sunset)) }}
