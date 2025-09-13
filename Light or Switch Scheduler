@@ -144,51 +144,40 @@ trigger:
     id: sunset
 
 condition:
-  # Built-in weekday check
+  # Built-in weekday check (no templates)
   - condition: time
     weekday: !input active_days
 
-  # ✅ Only run if this trigger type is enabled
-  #    - For any *time* trigger, proceed if either time toggle is on
-  #    - For sunrise/sunset, require their toggles and a non-'none' option
-  - condition: or
-    conditions:
-      - condition: template
-        value_template: >
-          {{ trigger.platform == 'time' and ( ((enable_turn_on_time)) or ((enable_turn_off_time)) ) }}
-      - condition: template
-        value_template: >
-          {{ trigger.id == 'sunrise' and ((enable_sunrise)) and ((sunrise_option)) != 'none' }}
-      - condition: template
-        value_template: >
-          {{ trigger.id == 'sunset' and ((enable_sunset)) and ((sunset_option)) != 'none' }}
-
 action:
   - choose:
-      # --- Fixed time: ON ---
+      # --- Fixed time: ON (only if toggle is enabled) ---
       - conditions:
           - condition: trigger
             id: time_on
+          - condition: template
+            value_template: "{{ ((enable_turn_on_time)) }}"
         sequence:
           - service: homeassistant.turn_on
             target:
               entity_id: !input target_entities
 
-      # --- Fixed time: OFF ---
+      # --- Fixed time: OFF (only if toggle is enabled) ---
       - conditions:
           - condition: trigger
             id: time_off
+          - condition: template
+            value_template: "{{ ((enable_turn_off_time)) }}"
         sequence:
           - service: homeassistant.turn_off
             target:
               entity_id: !input target_entities
 
-      # --- Sunrise branches ---
+      # --- Sunrise branches (toggle + option must match) ---
       - conditions:
           - condition: trigger
             id: sunrise
           - condition: template
-            value_template: "{{ (((sunrise_option)) | string).startswith('on_') and ((enable_sunrise)) }}"
+            value_template: "{{ ((enable_sunrise)) and (((sunrise_option)) | string).startswith('on_') }}"
         sequence:
           - delay: "{{ ((sunrise_option)).split('_')[1] }}"
           - service: homeassistant.turn_on
@@ -199,19 +188,19 @@ action:
           - condition: trigger
             id: sunrise
           - condition: template
-            value_template: "{{ (((sunrise_option)) | string).startswith('off_') and ((enable_sunrise)) }}"
+            value_template: "{{ ((enable_sunrise)) and (((sunrise_option)) | string).startswith('off_') }}"
         sequence:
           - delay: "{{ ((sunrise_option)).split('_')[1] }}"
           - service: homeassistant.turn_off
             target:
               entity_id: !input target_entities
 
-      # --- Sunset branches ---
+      # --- Sunset branches (toggle + option must match) ---
       - conditions:
           - condition: trigger
             id: sunset
           - condition: template
-            value_template: "{{ (((sunset_option)) | string).startswith('on_') and ((enable_sunset)) }}"
+            value_template: "{{ ((enable_sunset)) and (((sunset_option)) | string).startswith('on_') }}"
         sequence:
           - delay: "{{ ((sunset_option)).split('_')[1] }}"
           - service: homeassistant.turn_on
@@ -222,7 +211,7 @@ action:
           - condition: trigger
             id: sunset
           - condition: template
-            value_template: "{{ (((sunset_option)) | string).startswith('off_') and ((enable_sunset)) }}"
+            value_template: "{{ ((enable_sunset)) and (((sunset_option)) | string).startswith('off_') }}"
         sequence:
           - delay: "{{ ((sunset_option)).split('_')[1] }}"
           - service: homeassistant.turn_off
