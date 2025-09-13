@@ -21,18 +21,18 @@ blueprint:
       selector:
         boolean:
 
-    enable_turn_off_time:
-      name: Enable Turn OFF Time
-      default: false
-      selector:
-        boolean:
-
     turn_on_time:
       name: Turn ON Time
       description: "Fixed time to turn on (ignored unless toggle is ON)"
       default: "00:00:00"
       selector:
         time:
+
+    enable_turn_off_time:
+      name: Enable Turn OFF Time
+      default: false
+      selector:
+        boolean:
 
     turn_off_time:
       name: Turn OFF Time
@@ -51,11 +51,13 @@ blueprint:
     sunrise_option:
       name: Sunrise Trigger
       description: Choose what happens relative to sunrise
-      default: "off_00:00:00"
+      default: "none"
       selector:
         select:
           mode: dropdown
           options:
+            - label: "Please select..."
+              value: "none"
             - label: "Turn ON at sunrise"
               value: "on_00:00:00"
             - label: "Turn ON 15 minutes after sunrise"
@@ -74,11 +76,13 @@ blueprint:
     sunset_option:
       name: Sunset Trigger
       description: Choose what happens relative to sunset
-      default: "off_00:00:00"
+      default: "none"
       selector:
         select:
           mode: dropdown
           options:
+            - label: "Please select..."
+              value: "none"
             - label: "Turn ON at sunset"
               value: "on_00:00:00"
             - label: "Turn ON 15 minutes after sunset"
@@ -152,9 +156,9 @@ condition:
       - condition: template
         value_template: "{{ trigger.id == 'time_off' and enable_turn_off_time }}"
       - condition: template
-        value_template: "{{ trigger.id == 'sunrise' and enable_sunrise }}"
+        value_template: "{{ trigger.id == 'sunrise' and enable_sunrise and sunrise_option != 'none' }}"
       - condition: template
-        value_template: "{{ trigger.id == 'sunset' and enable_sunset }}"
+        value_template: "{{ trigger.id == 'sunset' and enable_sunset and sunset_option != 'none' }}"
 
 action:
   - choose:
