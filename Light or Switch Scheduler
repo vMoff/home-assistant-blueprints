@@ -1,5 +1,5 @@
 blueprint:
-  name: Light/Switch Scheduler
+  name: Light/Switch Scheduler (Dropdown Offsets + Days)
   description: >
     Turn a light or switch on/off at set times or around sunrise/sunset,
     with dropdown offset selection and active days of the week.
@@ -30,33 +30,33 @@ blueprint:
     sunrise_option:
       name: Sunrise Trigger
       description: Choose when to turn OFF relative to sunrise
-      default: off
+      default: "off"
       selector:
         select:
           options:
-            - label: Off
-              value: off
-            - label: 15 minutes before sunrise
+            - label: "Off"
+              value: "off"
+            - label: "15 minutes before sunrise"
               value: "-00:15:00"
-            - label: At sunrise
+            - label: "At sunrise"
               value: "00:00:00"
-            - label: 15 minutes after sunrise
+            - label: "15 minutes after sunrise"
               value: "+00:15:00"
 
     sunset_option:
       name: Sunset Trigger
       description: Choose when to turn ON relative to sunset
-      default: off
+      default: "off"
       selector:
         select:
           options:
-            - label: Off
-              value: off
-            - label: 15 minutes before sunset
+            - label: "Off"
+              value: "off"
+            - label: "15 minutes before sunset"
               value: "-00:15:00"
-            - label: At sunset
+            - label: "At sunset"
               value: "00:00:00"
-            - label: 15 minutes after sunset
+            - label: "15 minutes after sunset"
               value: "+00:15:00"
 
     active_days:
@@ -75,19 +75,19 @@ blueprint:
           multiple: true
           mode: list
           options:
-            - label: Monday
+            - label: "Monday"
               value: mon
-            - label: Tuesday
+            - label: "Tuesday"
               value: tue
-            - label: Wednesday
+            - label: "Wednesday"
               value: wed
-            - label: Thursday
+            - label: "Thursday"
               value: thu
-            - label: Friday
+            - label: "Friday"
               value: fri
-            - label: Saturday
+            - label: "Saturday"
               value: sat
-            - label: Sunday
+            - label: "Sunday"
               value: sun
 
 mode: single
@@ -103,18 +103,26 @@ trigger:
     event: sunrise
     offset: !input sunrise_option
     id: sunrise
-    enabled: "{{ not (!input sunrise_option == 'off') }}"
   - platform: sun
     event: sunset
     offset: !input sunset_option
     id: sunset
-    enabled: "{{ not (!input sunset_option == 'off') }}"
 
 condition:
   # Restrict to selected days
   - condition: template
     value_template: >
-      {{ now().strftime('%a')|lower in (!input active_days) }}
+      {{ now().strftime('%a')|lower[0:3] in (!input active_days) }}
+
+  # Skip if sunrise/sunset set to "off"
+  - condition: or
+    conditions:
+      - condition: template
+        value_template: "{{ trigger.id in ['time_on', 'time_off'] }}"
+      - condition: template
+        value_template: "{{ trigger.id == 'sunrise' and !input sunrise_option != 'off' }}"
+      - condition: template
+        value_template: "{{ trigger.id == 'sunset' and !input sunset_option != 'off' }}"
 
 action:
   - choose:
