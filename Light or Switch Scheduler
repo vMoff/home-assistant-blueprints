@@ -10,43 +10,36 @@ blueprint:
       selector:
         entity:
           multiple: true
-          domain:
-            - light
-            - switch
+          domain: [light, switch]
 
     # --- Time-based Triggers ---
     enable_turn_on_time:
       name: Enable Turn ON Time
       default: false
-      selector:
-        boolean:
+      selector: { boolean: {} }
 
     turn_on_time:
       name: Turn ON Time
       description: "Fixed time to turn on (ignored unless toggle is ON)"
       default: "12:00:00"
-      selector:
-        time:
+      selector: { time: {} }
 
     enable_turn_off_time:
       name: Enable Turn OFF Time
       default: false
-      selector:
-        boolean:
+      selector: { boolean: {} }
 
     turn_off_time:
       name: Turn OFF Time
       description: "Fixed time to turn off (ignored unless toggle is ON)"
       default: "12:00:00"
-      selector:
-        time:
+      selector: { time: {} }
 
     # --- Sunrise/Sunset Triggers ---
     enable_sunrise:
       name: Enable Sunrise Trigger
       default: false
-      selector:
-        boolean:
+      selector: { boolean: {} }
 
     sunrise_option:
       name: Sunrise Trigger
@@ -56,22 +49,16 @@ blueprint:
         select:
           mode: dropdown
           options:
-            - label: "Please select..."
-              value: "none"
-            - label: "Turn ON at sunrise"
-              value: "on_00:00:00"
-            - label: "Turn ON 15 minutes after sunrise"
-              value: "on_00:15:00"
-            - label: "Turn OFF at sunrise"
-              value: "off_00:00:00"
-            - label: "Turn OFF 15 minutes after sunrise"
-              value: "off_00:15:00"
+            - { label: "Please select...", value: "none" }
+            - { label: "Turn ON at sunrise", value: "on_00:00:00" }
+            - { label: "Turn ON 15 minutes after sunrise", value: "on_00:15:00" }
+            - { label: "Turn OFF at sunrise", value: "off_00:00:00" }
+            - { label: "Turn OFF 15 minutes after sunrise", value: "off_00:15:00" }
 
     enable_sunset:
       name: Enable Sunset Trigger
       default: false
-      selector:
-        boolean:
+      selector: { boolean: {} }
 
     sunset_option:
       name: Sunset Trigger
@@ -81,50 +68,31 @@ blueprint:
         select:
           mode: dropdown
           options:
-            - label: "Please select..."
-              value: "none"
-            - label: "Turn ON at sunset"
-              value: "on_00:00:00"
-            - label: "Turn ON 15 minutes after sunset"
-              value: "on_00:15:00"
-            - label: "Turn OFF at sunset"
-              value: "off_00:00:00"
-            - label: "Turn OFF 15 minutes after sunset"
-              value: "off_00:15:00"
+            - { label: "Please select...", value: "none" }
+            - { label: "Turn ON at sunset", value: "on_00:00:00" }
+            - { label: "Turn ON 15 minutes after sunset", value: "on_00:15:00" }
+            - { label: "Turn OFF at sunset", value: "off_00:00:00" }
+            - { label: "Turn OFF 15 minutes after sunset", value: "off_00:15:00" }
 
     # --- Active Days ---
     active_days:
       name: Active Days
       description: Days of the week when this automation should run
-      default:
-        - mon
-        - tue
-        - wed
-        - thu
-        - fri
-        - sat
-        - sun
+      default: [mon, tue, wed, thu, fri, sat, sun]
       selector:
         select:
           multiple: true
           mode: list
           options:
-            - label: "Monday"
-              value: mon
-            - label: "Tuesday"
-              value: tue
-            - label: "Wednesday"
-              value: wed
-            - label: "Thursday"
-              value: thu
-            - label: "Friday"
-              value: fri
-            - label: "Saturday"
-              value: sat
-            - label: "Sunday"
-              value: sun
+            - { label: Monday,    value: mon }
+            - { label: Tuesday,   value: tue }
+            - { label: Wednesday, value: wed }
+            - { label: Thursday,  value: thu }
+            - { label: Friday,    value: fri }
+            - { label: Saturday,  value: sat }
+            - { label: Sunday,    value: sun }
 
-# Allow an OFF time to interrupt any pending delay branch
+# Allow a scheduled OFF to interrupt any pending delay branch
 mode: restart
 
 trigger:
@@ -150,23 +118,23 @@ condition:
 
 action:
   - choose:
-      # --- Fixed time: ON (only if toggle is enabled) ---
+      # --- Fixed time: ON (gated by its toggle) ---
       - conditions:
           - condition: trigger
             id: time_on
           - condition: template
-            value_template: "{{ !input enable_turn_on_time }}"
+            value_template: "{{ ((enable_turn_on_time)) }}"
         sequence:
           - service: homeassistant.turn_on
             target:
               entity_id: !input target_entities
 
-      # --- Fixed time: OFF (only if toggle is enabled) ---
+      # --- Fixed time: OFF (gated by its toggle) ---
       - conditions:
           - condition: trigger
             id: time_off
           - condition: template
-            value_template: "{{ !input enable_turn_off_time }}"
+            value_template: "{{ ((enable_turn_off_time)) }}"
         sequence:
           - service: homeassistant.turn_off
             target:
@@ -177,10 +145,9 @@ action:
           - condition: trigger
             id: sunrise
           - condition: template
-            value_template: >
-              {{ (!input enable_sunrise) and (((!input sunrise_option)[:3]) == 'on_') }}
+            value_template: "{{ ((enable_sunrise)) and (((sunrise_option)) | string).startswith('on_') }}"
         sequence:
-          - delay: "{{ (!input sunrise_option).split('_')[1] }}"
+          - delay: "{{ ((sunrise_option)).split('_')[1] }}"
           - service: homeassistant.turn_on
             target:
               entity_id: !input target_entities
@@ -189,10 +156,9 @@ action:
           - condition: trigger
             id: sunrise
           - condition: template
-            value_template: >
-              {{ (!input enable_sunrise) and (((!input sunrise_option)[:4]) == 'off_') }}
+            value_template: "{{ ((enable_sunrise)) and (((sunrise_option)) | string).startswith('off_') }}"
         sequence:
-          - delay: "{{ (!input sunrise_option).split('_')[1] }}"
+          - delay: "{{ ((sunrise_option)).split('_')[1] }}"
           - service: homeassistant.turn_off
             target:
               entity_id: !input target_entities
@@ -202,10 +168,9 @@ action:
           - condition: trigger
             id: sunset
           - condition: template
-            value_template: >
-              {{ (!input enable_sunset) and (((!input sunset_option)[:3]) == 'on_') }}
+            value_template: "{{ ((enable_sunset)) and (((sunset_option)) | string).startswith('on_') }}"
         sequence:
-          - delay: "{{ (!input sunset_option).split('_')[1] }}"
+          - delay: "{{ ((sunset_option)).split('_')[1] }}"
           - service: homeassistant.turn_on
             target:
               entity_id: !input target_entities
@@ -214,10 +179,9 @@ action:
           - condition: trigger
             id: sunset
           - condition: template
-            value_template: >
-              {{ (!input enable_sunset) and (((!input sunset_option)[:4]) == 'off_') }}
+            value_template: "{{ ((enable_sunset)) and (((sunset_option)) | string).startswith('off_') }}"
         sequence:
-          - delay: "{{ (!input sunset_option).split('_')[1] }}"
+          - delay: "{{ ((sunset_option)).split('_')[1] }}"
           - service: homeassistant.turn_off
             target:
               entity_id: !input target_entities
