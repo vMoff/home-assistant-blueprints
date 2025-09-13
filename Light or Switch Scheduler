@@ -14,9 +14,17 @@ blueprint:
             - light
             - switch
 
+    # --- Time-based Triggers ---
     enable_turn_on_time:
       name: Enable Turn ON Time
       description: Toggle to enable fixed ON time
+      default: false
+      selector:
+        boolean:
+
+    enable_turn_off_time:
+      name: Enable Turn OFF Time
+      description: Toggle to enable fixed OFF time
       default: false
       selector:
         boolean:
@@ -28,13 +36,6 @@ blueprint:
       selector:
         time:
 
-    enable_turn_off_time:
-      name: Enable Turn OFF Time
-      description: Toggle to enable fixed OFF time
-      default: false
-      selector:
-        boolean:
-
     turn_off_time:
       name: Turn OFF Time
       description: "Fixed time to turn off"
@@ -42,6 +43,7 @@ blueprint:
       selector:
         time:
 
+    # --- Sunrise/Sunset Triggers ---
     sunrise_option:
       name: Sunrise Trigger
       description: Choose what happens relative to sunrise
@@ -80,6 +82,7 @@ blueprint:
             - label: "Turn OFF 15 minutes after sunset"
               value: "off_00:15:00"
 
+    # --- Active Days ---
     active_days:
       name: Active Days
       description: Days of the week when this automation should run
