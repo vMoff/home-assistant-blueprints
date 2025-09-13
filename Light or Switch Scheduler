@@ -1,0 +1,90 @@
+blueprint:
+  name: Light/Switch Scheduler
+  description: >
+    Turn a light or switch on/off at set times or around sunset/sunrise.
+    Non-admins can use this to schedule devices without editing YAML.
+  domain: automation
+  input:
+    target_entity:
+      name: Light or Switch
+      description: Choose the light or switch to control.
+      selector:
+        entity:
+          domain: 
+            - light
+            - switch
+    turn_on_time:
+      name: Turn ON Time
+      description: Time to turn on (optional)
+      default: ""
+      selector:
+        time:
+    turn_off_time:
+      name: Turn OFF Time
+      description: Time to turn off (optional)
+      default: ""
+      selector:
+        time:
+    sunset_offset:
+      name: Sunset Offset
+      description: >
+        Offset from sunset (e.g. -00:15:00 for 15 min before, +00:10:00 for after).
+      default: "0:00:00"
+      selector:
+        text:
+    sunrise_offset:
+      name: Sunrise Offset
+      description: >
+        Offset from sunrise (e.g. +00:20:00 for 20 min after).
+      default: "0:00:00"
+      selector:
+        text:
+
+mode: single
+
+trigger:
+  - platform: time
+    at: !input turn_on_time
+    id: time_on
+  - platform: time
+    at: !input turn_off_time
+    id: time_off
+  - platform: sun
+    event: sunset
+    offset: !input sunset_offset
+    id: sunset
+  - platform: sun
+    event: sunrise
+    offset: !input sunrise_offset
+    id: sunrise
+
+action:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: time_on
+        sequence:
+          - service: homeassistant.turn_on
+            target:
+              entity_id: !input target_entity
+      - conditions:
+          - condition: trigger
+            id: time_off
+        sequence:
+          - service: homeassistant.turn_off
+            target:
+              entity_id: !input target_entity
+      - conditions:
+          - condition: trigger
+            id: sunset
+        sequence:
+          - service: homeassistant.turn_on
+            target:
+              entity_id: !input target_entity
+      - conditions:
+          - condition: trigger
+            id: sunrise
+        sequence:
+          - service: homeassistant.turn_off
+            target:
+              entity_id: !input target_entity
