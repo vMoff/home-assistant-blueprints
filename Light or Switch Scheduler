@@ -11,12 +11,9 @@ blueprint:
       selector:
         entity:
           multiple: true
-          filter:
-            - domain: light
-            - domain: switch
-              entity_id:
-                - "switch.*light*"
-                - "switch.*lamp*"
+          domain:
+            - light
+            - switch
 
     # --- Time-based Triggers ---
     enable_turn_on_time:
