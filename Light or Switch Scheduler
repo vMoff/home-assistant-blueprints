@@ -1,14 +1,15 @@
 blueprint:
   name: Light/Switch Scheduler
   description: >
-    Turn a light or switch on/off at set times or around sunrise/sunset,
+    Turn one or more lights or switches on/off at set times or around sunrise/sunset,
     with dropdown action/offset selection and active days of the week.
   domain: automation
   input:
-    target_entity:
-      name: Light or Switch
+    target_entities:
+      name: Lights or Switches
       selector:
         entity:
+          multiple: true
           domain:
             - light
             - switch
@@ -144,7 +145,7 @@ action:
         sequence:
           - service: homeassistant.turn_on
             target:
-              entity_id: !input target_entity
+              entity_id: !input target_entities
 
       - conditions:
           - condition: trigger
@@ -152,7 +153,7 @@ action:
         sequence:
           - service: homeassistant.turn_off
             target:
-              entity_id: !input target_entity
+              entity_id: !input target_entities
 
       - conditions:
           - condition: trigger
@@ -162,7 +163,7 @@ action:
         sequence:
           - service: homeassistant.turn_on
             target:
-              entity_id: !input target_entity
+              entity_id: !input target_entities
 
       - conditions:
           - condition: trigger
@@ -172,7 +173,7 @@ action:
         sequence:
           - service: homeassistant.turn_off
             target:
-              entity_id: !input target_entity
+              entity_id: !input target_entities
 
       - conditions:
           - condition: trigger
@@ -182,7 +183,7 @@ action:
         sequence:
           - service: homeassistant.turn_on
             target:
-              entity_id: !input target_entity
+              entity_id: !input target_entities
 
       - conditions:
           - condition: trigger
@@ -192,4 +193,4 @@ action:
         sequence:
           - service: homeassistant.turn_off
             target:
-              entity_id: !input target_entity
+              entity_id: !input target_entities
