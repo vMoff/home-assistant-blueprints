@@ -1,8 +1,8 @@
 blueprint:
   name: Light/Switch Scheduler
   description: >
-    Turn a light or switch on/off at set times or around sunset/sunrise,
-    with toggles for each trigger type and selectable days of the week.
+    Turn a light or switch on/off at set times or around sunrise/sunset,
+    with dropdown offset selection and active days of the week.
   domain: automation
   input:
     target_entity:
@@ -13,53 +13,51 @@ blueprint:
             - light
             - switch
 
-    enable_time_on:
-      name: Enable Turn ON Time
-      default: false
-      selector:
-        boolean:
-
     turn_on_time:
       name: Turn ON Time
-      default: "00:00:00"
+      description: Optional fixed time to turn on
+      default: ""
       selector:
         time:
-
-    enable_time_off:
-      name: Enable Turn OFF Time
-      default: false
-      selector:
-        boolean:
 
     turn_off_time:
       name: Turn OFF Time
-      default: "00:00:00"
+      description: Optional fixed time to turn off
+      default: ""
       selector:
         time:
 
-    enable_sunset:
-      name: Enable Sunset Trigger
-      default: false
+    sunrise_option:
+      name: Sunrise Trigger
+      description: Choose when to turn OFF relative to sunrise
+      default: off
       selector:
-        boolean:
+        select:
+          options:
+            - label: Off
+              value: off
+            - label: 15 minutes before sunrise
+              value: "-00:15:00"
+            - label: At sunrise
+              value: "00:00:00"
+            - label: 15 minutes after sunrise
+              value: "+00:15:00"
 
-    sunset_offset:
-      name: Sunset Offset
-      default: "0:00:00"
+    sunset_option:
+      name: Sunset Trigger
+      description: Choose when to turn ON relative to sunset
+      default: off
       selector:
-        text:
-
-    enable_sunrise:
-      name: Enable Sunrise Trigger
-      default: false
-      selector:
-        boolean:
-
-    sunrise_offset:
-      name: Sunrise Offset
-      default: "0:00:00"
-      selector:
-        text:
+        select:
+          options:
+            - label: Off
+              value: off
+            - label: 15 minutes before sunset
+              value: "-00:15:00"
+            - label: At sunset
+              value: "00:00:00"
+            - label: 15 minutes after sunset
+              value: "+00:15:00"
 
     active_days:
       name: Active Days
@@ -102,45 +100,21 @@ trigger:
     at: !input turn_off_time
     id: time_off
   - platform: sun
-    event: sunset
-    offset: !input sunset_offset
-    id: sunset
-  - platform: sun
     event: sunrise
-    offset: !input sunrise_offset
+    offset: !input sunrise_option
     id: sunrise
+    enabled: "{{ not (!input sunrise_option == 'off') }}"
+  - platform: sun
+    event: sunset
+    offset: !input sunset_option
+    id: sunset
+    enabled: "{{ not (!input sunset_option == 'off') }}"
 
 condition:
+  # Restrict to selected days
   - condition: template
     value_template: >
       {{ now().strftime('%a')|lower in (!input active_days) }}
-
-  - condition: or
-    conditions:
-      - condition: and
-        conditions:
-          - condition: trigger
-            id: time_on
-          - condition: template
-            value_template: "{{ !input enable_time_on }}"
-      - condition: and
-        conditions:
-          - condition: trigger
-            id: time_off
-          - condition: template
-            value_template: "{{ !input enable_time_off }}"
-      - condition: and
-        conditions:
-          - condition: trigger
-            id: sunset
-          - condition: template
-            value_template: "{{ !input enable_sunset }}"
-      - condition: and
-        conditions:
-          - condition: trigger
-            id: sunrise
-          - condition: template
-            value_template: "{{ !input enable_sunrise }}"
 
 action:
   - choose:
