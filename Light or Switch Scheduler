@@ -124,7 +124,7 @@ blueprint:
             - label: "Sunday"
               value: sun
 
-# Let OFF interrupt any pending delay branch
+# Allow an OFF time to interrupt any pending delay branch
 mode: restart
 
 trigger:
@@ -144,21 +144,24 @@ trigger:
     id: sunset
 
 condition:
-  # Built-in weekday check (no templates)
+  # Built-in weekday check
   - condition: time
     weekday: !input active_days
 
-  # Only run if this trigger type is enabled
+  # ✅ Only run if this trigger type is enabled
+  #    - For any *time* trigger, proceed if either time toggle is on
+  #    - For sunrise/sunset, require their toggles and a non-'none' option
   - condition: or
     conditions:
       - condition: template
-        value_template: "{{ trigger.id == 'time_on' and ((enable_turn_on_time)) }}"
+        value_template: >
+          {{ trigger.platform == 'time' and ( ((enable_turn_on_time)) or ((enable_turn_off_time)) ) }}
       - condition: template
-        value_template: "{{ trigger.id == 'time_off' and ((enable_turn_off_time)) }}"
+        value_template: >
+          {{ trigger.id == 'sunrise' and ((enable_sunrise)) and ((sunrise_option)) != 'none' }}
       - condition: template
-        value_template: "{{ trigger.id == 'sunrise' and ((enable_sunrise)) and ((sunrise_option)) != 'none' }}"
-      - condition: template
-        value_template: "{{ trigger.id == 'sunset' and ((enable_sunset)) and ((sunset_option)) != 'none' }}"
+        value_template: >
+          {{ trigger.id == 'sunset' and ((enable_sunset)) and ((sunset_option)) != 'none' }}
 
 action:
   - choose:
