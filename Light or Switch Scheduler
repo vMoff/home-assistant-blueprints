@@ -35,6 +35,8 @@ blueprint:
       selector:
         select:
           options:
+            - label: "Disabled"
+              value: "disabled"
             - label: "Turn ON at sunrise"
               value: "on_00:00:00"
             - label: "Turn ON 15 minutes after sunrise"
@@ -43,8 +45,6 @@ blueprint:
               value: "off_00:00:00"
             - label: "Turn OFF 15 minutes after sunrise"
               value: "off_00:15:00"
-            - label: "Disabled"
-              value: "disabled"
 
     sunset_option:
       name: Sunset Trigger
@@ -53,6 +53,8 @@ blueprint:
       selector:
         select:
           options:
+            - label: "Disabled"
+              value: "disabled"
             - label: "Turn ON at sunset"
               value: "on_00:00:00"
             - label: "Turn ON 15 minutes after sunset"
@@ -61,8 +63,6 @@ blueprint:
               value: "off_00:00:00"
             - label: "Turn OFF 15 minutes after sunset"
               value: "off_00:15:00"
-            - label: "Disabled"
-              value: "disabled"
 
     active_days:
       name: Active Days
@@ -119,11 +119,13 @@ condition:
     value_template: >
       {{ now().strftime('%a')[:3] | lower in active_days }}
 
-  # Skip disabled sun options
+  # Skip disabled or unset options
   - condition: or
     conditions:
       - condition: template
-        value_template: "{{ trigger.id in ['time_on', 'time_off'] }}"
+        value_template: "{{ trigger.id == 'time_on' and turn_on_time != '' }}"
+      - condition: template
+        value_template: "{{ trigger.id == 'time_off' and turn_off_time != '' }}"
       - condition: template
         value_template: "{{ trigger.id == 'sunrise' and sunrise_option != 'disabled' }}"
       - condition: template
