@@ -14,16 +14,30 @@ blueprint:
             - light
             - switch
 
+    enable_turn_on_time:
+      name: Enable Turn ON Time
+      description: Toggle to enable fixed ON time
+      default: false
+      selector:
+        boolean:
+
     turn_on_time:
       name: Turn ON Time
-      description: "**OPTIONAL:** Fixed time to turn on (leave at 00:00:00 if unused)"
+      description: "Fixed time to turn on"
       default: "00:00:00"
       selector:
         time:
 
+    enable_turn_off_time:
+      name: Enable Turn OFF Time
+      description: Toggle to enable fixed OFF time
+      default: false
+      selector:
+        boolean:
+
     turn_off_time:
       name: Turn OFF Time
-      description: "**OPTIONAL:** Fixed time to turn off (leave at 00:00:00 if unused)"
+      description: "Fixed time to turn off"
       default: "00:00:00"
       selector:
         time:
@@ -125,9 +139,9 @@ condition:
   - condition: or
     conditions:
       - condition: template
-        value_template: "{{ trigger.id == 'time_on' and turn_on_time != '00:00:00' }}"
+        value_template: "{{ trigger.id == 'time_on' and enable_turn_on_time }}"
       - condition: template
-        value_template: "{{ trigger.id == 'time_off' and turn_off_time != '00:00:00' }}"
+        value_template: "{{ trigger.id == 'time_off' and enable_turn_off_time }}"
       - condition: template
         value_template: "{{ trigger.id == 'sunrise' and sunrise_option != 'disabled' }}"
       - condition: template
