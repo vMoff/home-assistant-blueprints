@@ -146,19 +146,19 @@ condition:
   # Restrict to selected days
   - condition: template
     value_template: >
-      {{ now().strftime('%a')[:3] | lower in active_days }}
+      {{ now().strftime('%a')|lower in ((active_days)) }}
 
   # Only run if the trigger type is enabled
   - condition: or
     conditions:
       - condition: template
-        value_template: "{{ trigger.id == 'time_on' and enable_turn_on_time }}"
+        value_template: "{{ trigger.id == 'time_on' and ((enable_turn_on_time)) }}"
       - condition: template
-        value_template: "{{ trigger.id == 'time_off' and enable_turn_off_time }}"
+        value_template: "{{ trigger.id == 'time_off' and ((enable_turn_off_time)) }}"
       - condition: template
-        value_template: "{{ trigger.id == 'sunrise' and enable_sunrise and sunrise_option != 'none' }}"
+        value_template: "{{ trigger.id == 'sunrise' and ((enable_sunrise)) and ((sunrise_option)) != 'none' }}"
       - condition: template
-        value_template: "{{ trigger.id == 'sunset' and enable_sunset and sunset_option != 'none' }}"
+        value_template: "{{ trigger.id == 'sunset' and ((enable_sunset)) and ((sunset_option)) != 'none' }}"
 
 action:
   - choose:
@@ -182,9 +182,9 @@ action:
           - condition: trigger
             id: sunrise
           - condition: template
-            value_template: "{{ sunrise_option.startswith('on_') and enable_sunrise }}"
+            value_template: "{{ ((sunrise_option)) | string | startswith('on_') and ((enable_sunrise)) }}"
         sequence:
-          - delay: "{{ sunrise_option.split('_')[1] }}"
+          - delay: "{{ ((sunrise_option)).split('_')[1] }}"
           - service: homeassistant.turn_on
             target:
               entity_id: !input target_entities
@@ -193,9 +193,9 @@ action:
           - condition: trigger
             id: sunrise
           - condition: template
-            value_template: "{{ sunrise_option.startswith('off_') and enable_sunrise }}"
+            value_template: "{{ ((sunrise_option)) | string | startswith('off_') and ((enable_sunrise)) }}"
         sequence:
-          - delay: "{{ sunrise_option.split('_')[1] }}"
+          - delay: "{{ ((sunrise_option)).split('_')[1] }}"
           - service: homeassistant.turn_off
             target:
               entity_id: !input target_entities
@@ -204,9 +204,9 @@ action:
           - condition: trigger
             id: sunset
           - condition: template
-            value_template: "{{ sunset_option.startswith('on_') and enable_sunset }}"
+            value_template: "{{ ((sunset_option)) | string | startswith('on_') and ((enable_sunset)) }}"
         sequence:
-          - delay: "{{ sunset_option.split('_')[1] }}"
+          - delay: "{{ ((sunset_option)).split('_')[1] }}"
           - service: homeassistant.turn_on
             target:
               entity_id: !input target_entities
@@ -215,9 +215,9 @@ action:
           - condition: trigger
             id: sunset
           - condition: template
-            value_template: "{{ sunset_option.startswith('off_') and enable_sunset }}"
+            value_template: "{{ ((sunset_option)) | string | startswith('off_') and ((enable_sunset)) }}"
         sequence:
-          - delay: "{{ sunset_option.split('_')[1] }}"
+          - delay: "{{ ((sunset_option)).split('_')[1] }}"
           - service: homeassistant.turn_off
             target:
               entity_id: !input target_entities
