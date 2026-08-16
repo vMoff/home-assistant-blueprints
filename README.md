@@ -20,7 +20,7 @@ selected days of the week.
 
 ### Import into Home Assistant
 
-[![Open your Home Assistant instance and import this blueprint](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FvMoff%2Fhome-assistant-blueprints%2Fblob%2Fmain%2Flight-or-switch-scheduler.yaml)
+[![Open your Home Assistant instance and import this blueprint](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fraw.githubusercontent.com%2FvMoff%2Fhome-assistant-blueprints%2Fmain%2Flight-or-switch-scheduler.yaml)
 
 Alternatively:
 
@@ -29,7 +29,7 @@ Alternatively:
 3. Paste this URL:
 
    ```text
-   https://github.com/vMoff/home-assistant-blueprints/blob/main/light-or-switch-scheduler.yaml
+   https://raw.githubusercontent.com/vMoff/home-assistant-blueprints/main/light-or-switch-scheduler.yaml
    ```
 
 4. Preview and import the blueprint.
